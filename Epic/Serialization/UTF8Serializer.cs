@@ -1,7 +1,7 @@
 using System.Text;
-using Epic.Core.Abstract;
+using Epic.Abstract;
 
-namespace Epic.Core.Serialization;
+namespace Epic.Serialization;
 
 public class UTF8Serializer : IDeserializer<string>
 {

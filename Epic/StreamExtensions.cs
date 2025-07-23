@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
-using Epic.Core.Models;
+using Epic.Models;
 
-namespace Epic.Core;
+namespace Epic;
 
 public static class StreamExtensions
 {

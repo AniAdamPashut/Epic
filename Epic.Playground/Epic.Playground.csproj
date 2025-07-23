@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Epic.Core/Epic.Core.csproj" />
+    <ProjectReference Include="../Epic/Epic.csproj" />
     <ProjectReference Include="../Epic.Rabbitmq/Epic.Rabbitmq.csproj" />
   </ItemGroup>
 

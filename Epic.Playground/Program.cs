@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
-using Epic.Core;
-using Epic.Core.Abstract;
-using Epic.Core.Serialization;
+using Epic;
+using Epic.Abstract;
+using Epic.Serialization;
 using Epic.Rabbitmq;
 
 var builder = WebApplication.CreateBuilder(args);

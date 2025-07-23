@@ -1,9 +1,9 @@
 using RabbitMQ.Client;
-using Epic.Core.Abstract;
+using Epic.Abstract;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client.Events;
-using Epic.Core.Models;
-using Epic.Core.Utilities;
+using Epic.Models;
+using Epic.Utilities;
 
 namespace Epic.Rabbitmq;
 

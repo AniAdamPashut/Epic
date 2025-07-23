@@ -1,4 +1,4 @@
-namespace Epic.Core.Models;
+namespace Epic.Models;
 
 public record MessageStatus
 {

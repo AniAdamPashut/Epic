@@ -1,8 +1,8 @@
 using System.Reactive.Disposables;
-using Epic.Core.Models;
+using Epic.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace Epic.Core.Abstract;
+namespace Epic.Abstract;
 
 public abstract class BaseObservableService<T> : IObservable<Message<T>>, IHostedService
 {

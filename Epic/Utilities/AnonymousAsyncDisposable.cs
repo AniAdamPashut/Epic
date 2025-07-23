@@ -1,5 +1,5 @@
 
-namespace Epic.Core.Utilities;
+namespace Epic.Utilities;
 
 public class AnonymousAsyncDisposable : IAsyncDisposable
 {

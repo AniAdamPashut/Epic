@@ -1,4 +1,4 @@
-namespace Epic.Core.Abstract;
+namespace Epic.Abstract;
 
 public interface IDeserializer<T>
 {
