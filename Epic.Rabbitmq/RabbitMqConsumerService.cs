@@ -7,14 +7,14 @@ using Epic.Utilities;
 
 namespace Epic.Rabbitmq;
 
-public class RabbitmqConsumerService<TMessage> : BaseObservableService<TMessage>
+public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
 {
     private readonly RabbitmqConfig _config;
     private readonly IDeserializer<TMessage> _deserializer;
 
     private IAsyncDisposable? _disposable;
 
-    public RabbitmqConsumerService(IOptions<RabbitmqConfig> configurationOptions, IDeserializer<TMessage> deserializer)
+    public RabbitMqConsumerService(IOptions<RabbitmqConfig> configurationOptions, IDeserializer<TMessage> deserializer)
     {
         _config = configurationOptions.Value;
         _deserializer = deserializer;
@@ -32,6 +32,8 @@ public class RabbitmqConsumerService<TMessage> : BaseObservableService<TMessage>
         var connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
         var channel = await connection.CreateChannelAsync();
 
+        await channel.QueueDeclareAsync(_config.Queue);
+
         var consumer = new AsyncEventingBasicConsumer(channel);
 
         consumer.ReceivedAsync += async (sender, args) =>
@@ -39,19 +41,20 @@ public class RabbitmqConsumerService<TMessage> : BaseObservableService<TMessage>
             var body = args.Body;
             var incomingMessage = _deserializer.Deserialize(body);
 
-            var wrappedMessage = new Message<TMessage>(incomingMessage);
+            var context = new RabbitMqContext(Guid.NewGuid(), args.DeliveryTag);
+            var wrappedMessage = new Message<TMessage>(incomingMessage, context);
+
             PublishToAll(wrappedMessage);
 
             try
             {
                 MessageStatus status = await wrappedMessage.Task;
-                Console.WriteLine(status);
-                if (status is not MessageStatus.Completed)
+                if (status.Context is not RabbitMqContext rabbitmqContext)
                 {
-                    throw new Exception("not completed");
+                    throw new Exception("");
                 }
 
-                await channel.BasicAckAsync(args.DeliveryTag, false, cancellationToken);
+                await channel.BasicAckAsync(rabbitmqContext.DeliveryTag, false, cancellationToken);
             }
             catch (Exception ex)
             {

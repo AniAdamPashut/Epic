@@ -7,14 +7,14 @@ public static class StreamExtensions
 {
     public static IObservable<Message<T1>> Map<T, T1>(this IObservable<Message<T>> observable, Func<T, T1> map)
     {
-        return observable.Select(x => new Message<T1>(map(x.Value), x._taskCompletionSource));
+        return observable.Select(x => new Message<T1>(map(x.Value), x.Context));
     }
 
-    public static IObservable<Message<T>> Filter<T>(this IObservable<Message<T>> observable, Predicate<T> filter, string reason)
+    public static IObservable<Message<T>> Filter<T>(this IObservable<Message<T>> observable, Predicate<T> shouldKeep, string reason)
     {
         return observable.Where(x =>
         {
-            if (!filter(x.Value))
+            if (!shouldKeep(x.Value))
                 return true;
 
             x.Filter(reason);
