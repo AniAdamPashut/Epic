@@ -1,18 +1,15 @@
 
 namespace Epic.Utilities;
 
-public class AnonymousAsyncDisposable : IAsyncDisposable
+public class AnonymousAsyncDisposable(Func<ValueTask> disposeAsync) : IAsyncDisposable
 {
-    private readonly Func<ValueTask> _disposeAsync;
+    private readonly Func<ValueTask> _disposeAsync = disposeAsync ?? throw new ArgumentNullException(nameof(disposeAsync));
     private bool _isDisposed = false;
-
-    public AnonymousAsyncDisposable(Func<ValueTask> disposeAsync)
-    {
-        _disposeAsync = disposeAsync ?? throw new ArgumentNullException(nameof(disposeAsync));
-    }
 
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         if (_isDisposed) return ValueTask.CompletedTask;
 
         _isDisposed = true;

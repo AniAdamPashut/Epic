@@ -26,6 +26,6 @@ source
         return values.Select(val => (val, guid)).ToList();
     })
     .KeyBy(x => x.guid)
-    .Acknowledge((x, key) => Console.WriteLine(x));
+    .Acknowledge((x, key) => Console.WriteLine($"{x.val}, {key}"));
 
 app.Run();

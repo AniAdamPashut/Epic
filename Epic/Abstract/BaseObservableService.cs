@@ -25,4 +25,12 @@ public abstract class BaseObservableService<T> : IObservable<Message<T>>, IHoste
             observer.OnNext(message);
         }
     }
+
+    protected void CloseAll()
+    {
+        foreach (var observer in _observers)
+        {
+            observer.OnCompleted();
+        }
+    }
 }
