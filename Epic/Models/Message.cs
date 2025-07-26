@@ -2,7 +2,7 @@ namespace Epic.Models;
 
 public record Message<T>(T Value, Context Context)
 {
-    public Task<MessageStatus> Task => Context._taskCompletionSource.Task;
+    public Task<MessageStatus> Task => Context.ReportingTask;
 
     public void Drop(string reason)
     {

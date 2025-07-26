@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client.Events;
 using Epic.Models;
 using Epic.Utilities;
+using Epic.Models.Contexts;
+using Epic.Extensions;
 
 namespace Epic.Rabbitmq;
 
@@ -49,10 +51,7 @@ public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
             try
             {
                 MessageStatus status = await wrappedMessage.Task;
-                if (status.Context is not RabbitMqContext rabbitmqContext)
-                {
-                    throw new Exception("");
-                }
+                RabbitMqContext rabbitmqContext = status.GetContext<RabbitMqContext>();
 
                 await channel.BasicAckAsync(rabbitmqContext.DeliveryTag, false, cancellationToken);
             }
@@ -72,7 +71,6 @@ public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
             await connection.CloseAsync();
         });
     }
-
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         return _disposable?.DisposeAsync().AsTask() ?? Task.CompletedTask;

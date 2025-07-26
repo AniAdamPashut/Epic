@@ -1,6 +1,6 @@
 namespace Epic.Rabbitmq;
 
-public record class RabbitmqConfig
+public record RabbitmqConfig
 {
     public required string Host { get; init; }
     public required string Username { get; init; }

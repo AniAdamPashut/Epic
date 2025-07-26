@@ -21,7 +21,7 @@ public abstract class BaseObservableService<T> : IObservable<Message<T>>, IHoste
     protected void PublishToAll(Message<T> message)
     {
         foreach (var observer in _observers)
-        { 
+        {
             observer.OnNext(message);
         }
     }
