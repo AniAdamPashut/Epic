@@ -11,12 +11,12 @@ namespace Epic.Rabbitmq;
 
 public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
 {
-    private readonly RabbitmqConfig _config;
+    private readonly RabbitMqConfig _config;
     private readonly IDeserializer<TMessage> _deserializer;
 
     private IAsyncDisposable? _disposable;
 
-    public RabbitMqConsumerService(IOptions<RabbitmqConfig> configurationOptions, IDeserializer<TMessage> deserializer)
+    public RabbitMqConsumerService(IOptions<RabbitMqConfig> configurationOptions, IDeserializer<TMessage> deserializer)
     {
         _config = configurationOptions.Value;
         _deserializer = deserializer;

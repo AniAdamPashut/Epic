@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 const string SOURCE = "rabbitmq_source";
 
-builder.Services.Configure<RabbitmqConfig>(builder.Configuration.GetSection(nameof(RabbitmqConfig)));
+builder.Services.Configure<RabbitMqConfig>(builder.Configuration.GetSection(nameof(RabbitMqConfig)));
 builder.Services.AddSingleton<IDeserializer<string>, UTF8Serializer>();
 builder.Services.AddKeyedSingleton<RabbitMqConsumerService<string>>(SOURCE);
 builder.Services.AddHostedService(sp => sp.GetKeyedService<RabbitMqConsumerService<string>>(SOURCE)!);
