@@ -5,6 +5,8 @@ using RabbitMQ.Client.Events;
 using Epic.Models;
 using Epic.Utilities;
 using Epic.Extensions;
+using Microsoft.Extensions.Logging;
+using Epic.Abstract.Serialization;
 
 namespace Epic.Rabbitmq;
 
@@ -12,17 +14,25 @@ public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
 {
     private readonly RabbitMqConfig _config;
     private readonly IDeserializer<TMessage> _deserializer;
+    private readonly ILogger<RabbitMqConsumerService<TMessage>> _logger;
 
     private IAsyncDisposable? _disposable;
 
-    public RabbitMqConsumerService(IOptions<RabbitMqConfig> configurationOptions, IDeserializer<TMessage> deserializer)
+    public RabbitMqConsumerService(
+        IOptions<RabbitMqConfig> configurationOptions,
+        IDeserializer<TMessage> deserializer,
+        ILoggerFactory loggerFactory)
     {
         _config = configurationOptions.Value;
         _deserializer = deserializer;
+
+        _logger = loggerFactory.CreateLogger<RabbitMqConsumerService<TMessage>>();
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Starting the RabbitMq Consumer Service");
+
         var connectionFactory = new ConnectionFactory
         {
             HostName = _config.Host,
@@ -53,17 +63,16 @@ public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
                 RabbitMqContext rabbitmqContext = status.GetContext<RabbitMqContext>();
 
                 await channel.BasicAckAsync(rabbitmqContext.DeliveryTag, false, cancellationToken);
-                Console.WriteLine($"Acked the message \"{incomingMessage}\"");
+                _logger.LogInformation("Acked the message \"{incomingMessage}\"", incomingMessage);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                // Do metrics here
-                // log error
+                _logger.LogError(ex, "Encountered an exception");
             }
         };
 
         var tag = await channel.BasicConsumeAsync(_config.Queue, autoAck: false, consumer, cancellationToken);
+
         _disposable = new AnonymousAsyncDisposable(async () =>
         {
             await channel.BasicCancelAsync(tag);
@@ -72,9 +81,13 @@ public class RabbitMqConsumerService<TMessage> : BaseObservableService<TMessage>
 
             CloseAll();
         });
+
+        _logger.LogInformation("Started the RabbitMq Consumer Service");
     }
+
     public override Task StopAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Stopping the RabbitMq Consumer Service");
         return _disposable?.DisposeAsync().AsTask() ?? Task.CompletedTask;
     }
 }

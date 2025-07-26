@@ -1,3 +1,4 @@
+using Epic.Exceptions;
 using Epic.Models;
 using Epic.Models.Contexts;
 
@@ -18,7 +19,6 @@ public static class ContextExtensions
                 return anotherChanceAtTheContext;
         }
 
-        
-        throw new Exception("");
+        throw new UnknownContextException<TContext>(status.Context.GetType());
     }
 }

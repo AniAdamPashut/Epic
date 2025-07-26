@@ -1,6 +1,6 @@
 using System.Reactive.Linq;
+using Epic.Abstract.Functions;
 using Epic.Models;
-using Microsoft.Win32.SafeHandles;
 
 namespace Epic.Extensions;
 
@@ -11,7 +11,17 @@ public static class StreamExtensions
         return observable.Select(x => new Message<T1>(map(x.Value), x.Context));
     }
 
+    public static IObservable<Message<T1>> Map<T, T1>(this IObservable<Message<T>> observable, IMapFunction<T, T1> map)
+    {
+        return observable.Select(x => new Message<T1>(map.Map(x.Value), x.Context));
+    }
+
     public static IObservable<Message<T1>> FlatMap<T, T1>(this IObservable<Message<T>> observable, Func<T, IList<T1>> map)
+    {
+        return observable.SelectMany(x => x.BindContexts(map));
+    }
+
+    public static IObservable<Message<T1>> FlatMap<T, T1>(this IObservable<Message<T>> observable, IFlatMapFunction<T, T1> map)
     {
         return observable.SelectMany(x => x.BindContexts(map));
     }
@@ -29,6 +39,18 @@ public static class StreamExtensions
                 return true;
 
             x.Filter(reason);
+            return false;
+        });
+    }
+
+    public static IObservable<Message<T>> Filter<T>(this IObservable<Message<T>> observable, IFilterFunction<T> filterFunction)
+    {
+        return observable.Where(x =>
+        {
+            if (!filterFunction.ShouldFilter(x.Value))
+                return true;
+
+            x.Filter(filterFunction.Reason);
             return false;
         });
     }

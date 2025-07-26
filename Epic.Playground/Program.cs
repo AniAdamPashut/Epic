@@ -1,8 +1,10 @@
 using System.Reactive.Linq;
-using Epic.Abstract;
 using Epic.Serialization;
 using Epic.Rabbitmq;
 using Epic.Extensions;
+using Epic.Abstract.Serialization;
+using Epic.Playground.Filters;
+using Epic.Playground.Processors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,15 +19,20 @@ var app = builder.Build();
 
 var source = app.Services.GetKeyedService<RabbitMqConsumerService<string>>(SOURCE)!;
 
+var aaFilterFunction = new AAFilterFunction();
+var splitBySpaceFlatMapFunction = new SplitBySpaceFlatMapFunction();
+var multiplyStringMapFunction = new MultiplyStringMapFunction();
+
 source
-    .Filter(x => x.StartsWith("aa"), "Starts with aa")
-    .FlatMap(x =>
+    .Filter(aaFilterFunction)
+    .FlatMap(splitBySpaceFlatMapFunction)
+    .SelectMany(async x =>
     {
-        var values = x.Split(' ');
-        var guid = Guid.NewGuid();
-        return values.Select(val => (val, guid)).ToList();
+        await Task.Delay(x.Value.Value.Length * 1000);
+        return x;
     })
-    .KeyBy(x => x.guid)
-    .Acknowledge((x, key) => Console.WriteLine($"{x.val}, {key}"));
+    .Map(multiplyStringMapFunction)
+    .KeyBy(pair => pair.Guid)
+    .Acknowledge((x, key) => Console.WriteLine($"{x.Value}, {key}"));
 
 app.Run();
