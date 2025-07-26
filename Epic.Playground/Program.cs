@@ -21,16 +21,13 @@ var source = app.Services.GetKeyedService<RabbitMqConsumerService<string>>(SOURC
 
 var aaFilterFunction = new AAFilterFunction();
 var splitBySpaceFlatMapFunction = new SplitBySpaceFlatMapFunction();
+var delayByLengthAsyncMapFunction = new DelayByLengthAsyncMapFunction();
 var multiplyStringMapFunction = new MultiplyStringMapFunction();
 
 source
     .Filter(aaFilterFunction)
     .FlatMap(splitBySpaceFlatMapFunction)
-    .SelectMany(async x =>
-    {
-        await Task.Delay(x.Value.Value.Length * 1000);
-        return x;
-    })
+    .MapAsync(delayByLengthAsyncMapFunction)
     .Map(multiplyStringMapFunction)
     .KeyBy(pair => pair.Guid)
     .Acknowledge((x, key) => Console.WriteLine($"{x.Value}, {key}"));

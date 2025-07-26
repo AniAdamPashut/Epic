@@ -20,11 +20,11 @@ public static class MessageExtensions
         return newValues.Select(val => new Message<T1>(val, sharedContext)).ToList();
     }
 
-    public static IList<Message<T1>> BindContexts<T, T1>(this Message<T> message, IFlatMapFunction<T, T1> flatMapFunction)
+    public static async Task<IList<Message<T1>>> BindContexts<T, T1>(this Message<T> message,  Func<T, Task<IList<T1>>> flatMapFunction)
     {
-        var newValues = flatMapFunction.FlatMap(message.Value);
+        var newValues = await flatMapFunction(message.Value);
         var sharedContext = new SharedContext(Guid.NewGuid(), message.Context, newValues.Count);
 
-        return newValues.Select(val => new Message<T1>(val, sharedContext)).ToList();
+        return [.. newValues.Select(val => new Message<T1>(val, sharedContext))];
     }
 }
