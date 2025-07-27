@@ -48,7 +48,7 @@ public static class StreamExtensions
 
     public static IObservable<Message<T1>> FlatMapAsync<T, T1>(this IObservable<Message<T>> observable, Func<T, Task<IList<T1>>> map)
     {
-        return observable.SelectMany(async msg => await msg.BindContexts(map)).SelectMany(it => it);
+        return observable.SelectMany(async msg => await msg.BindContextsAsync(map)).SelectMany(it => it);
     }
 
     public static IObservable<Message<T1>> FlatMapAsync<T, T1>(this IObservable<Message<T>> observable, IAsyncFlatMapFunction<T, T1> asyncFlatMapFunction)
@@ -65,11 +65,11 @@ public static class StreamExtensions
 
     #region Filter
 
-    public static IObservable<Message<T>> Filter<T>(this IObservable<Message<T>> observable, Predicate<T> shouldKeep, string reason)
+    public static IObservable<Message<T>> Filter<T>(this IObservable<Message<T>> observable, Predicate<T> shouldFilter, string reason)
     {
         return observable.Where(x =>
         {
-            if (!shouldKeep(x.Value))
+            if (!shouldFilter(x.Value))
                 return true;
 
             x.Filter(reason);
@@ -82,11 +82,11 @@ public static class StreamExtensions
         return observable.Filter(filterFunction.ShouldFilter, filterFunction.Reason);
     }
 
-        public static IObservable<Message<T>> FilterAsync<T>(this IObservable<Message<T>> observable, Func<T, Task<bool>> shouldKeep, string reason)
+        public static IObservable<Message<T>> FilterAsync<T>(this IObservable<Message<T>> observable, Func<T, Task<bool>> shouldFilter, string reason)
     {
 
         return observable
-            .SelectMany(async msg => new { Message = msg, ShouldFilter = await shouldKeep(msg.Value) })
+            .SelectMany(async msg => new { Message = msg, ShouldFilter = await shouldFilter(msg.Value) })
             .Where(item =>
             {
                 if (!item.ShouldFilter)
